@@ -96,7 +96,8 @@ Beech and plain fir have no special wood and still give plain wood.
 
 Saplings Regrove plants also differ from ones a player plants in two ways
 that aren't settings: they grow among other trees (a planted sapling needs
-2 m of clear room around it, an oak 3 m) and they put up with mountain cold.
+2 m of clear room around it, an oak 3 m), and firs regrow on mountains, where
+a fir sapling a player plants stays "Too cold" and never grows.
 
 ---
 
