@@ -11,7 +11,8 @@ namespace Regrove
     {
         internal static readonly int SeenHash = "regrove_seen".GetStableHashCode();   // when the sweep first saw a stump
         private static readonly int TreeHash = "regrove_tree".GetStableHashCode();   // the tree that left a stump
-        private static readonly int OursHash = "HasFieldsPlant".GetStableHashCode();  // a sapling Regrove made
+        private static readonly int PlantedHash = "regrove_planted".GetStableHashCode();   // a sapling Regrove made
+        private static readonly int OursHash = "HasFieldsPlant".GetStableHashCode();       // ...and how 1.0.0 told them apart
         private const int SWEEP_BUDGET = 2000;          // objects looked at per frame
         private const float FALL_WATCH = 15f;           // seconds a felled tree's stump is looked for
 
@@ -164,7 +165,7 @@ namespace Regrove
                 {
                     var zdo = list[index];
                     int prefab = zdo.GetPrefab();
-                    if (Trees.Saplings.Contains(prefab) && zdo.GetBool(OursHash)) growing++;
+                    if (Trees.Saplings.Contains(prefab) && IsOurs(zdo)) growing++;
                     if (!Trees.Stumps.ContainsKey(prefab)) continue;
                     seen++;
                     if (Busy(zdo)) { busy++; continue; }
@@ -221,7 +222,7 @@ namespace Regrove
             return (long)(Plugin.RegrowDays.Value * day);
         }
 
-        internal static bool IsOurs(ZDO sapling) => sapling.GetBool(OursHash);
+        internal static bool IsOurs(ZDO sapling) => sapling.GetBool(PlantedHash) || sapling.GetBool(OursHash);
 
         internal static int TreeOf(ZDO stump)
         {
@@ -297,15 +298,22 @@ namespace Regrove
             if (zdo == null) return false;
             zdo.Set(ZDOVars.s_plantTime, ZNet.instance.GetTime().Ticks);
             zdo.Set(ZDOVars.s_seed, (int)(zdo.m_uid.ID + zdo.m_uid.UserID));   // the game's own default, set now so the countdown knows it
+            zdo.Set(PlantedHash, true);   // the server's own note; players' games never read it
+            // only the settings that differ from the sapling's own: each one is work for every
+            // player's game that loads the sapling
             float m = Mathf.Max(0f, Plugin.GrowTime.Value);
-            zdo.Set("HasFields", true);
-            zdo.Set("HasFieldsPlant", true);
-            zdo.Set("Plant.m_growRadius", 0f);               // grows where the old tree stood, among the others
-            zdo.Set("Plant.m_needCultivatedGround", false);
-            zdo.Set("Plant.m_destroyIfCantGrow", false);
-            zdo.Set("Plant.m_tolerateCold", true);           // the mountain firs and pines stood in the cold too
-            zdo.Set("Plant.m_growTime", plant.m_growTime * m);
-            zdo.Set("Plant.m_growTimeMax", plant.m_growTimeMax * m);
+            bool any = false;
+            if (plant.m_growRadius != 0f) { zdo.Set("Plant.m_growRadius", 0f); any = true; }   // grows where the old tree stood, among the others
+            if (plant.m_needCultivatedGround) { zdo.Set("Plant.m_needCultivatedGround", false); any = true; }
+            if (plant.m_destroyIfCantGrow) { zdo.Set("Plant.m_destroyIfCantGrow", false); any = true; }
+            if (!plant.m_tolerateCold) { zdo.Set("Plant.m_tolerateCold", true); any = true; }   // the mountain firs and pines stood in the cold too
+            if (m != 1f)
+            {
+                zdo.Set("Plant.m_growTime", plant.m_growTime * m);
+                zdo.Set("Plant.m_growTimeMax", plant.m_growTimeMax * m);
+                any = true;
+            }
+            if (any) { zdo.Set("HasFields", true); zdo.Set("HasFieldsPlant", true); }
             return true;
         }
 

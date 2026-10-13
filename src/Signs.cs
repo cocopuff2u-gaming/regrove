@@ -9,6 +9,8 @@ namespace Regrove
     internal static class Signs
     {
         private const int MAX = 64;          // signs at once
+        private const float KEEP = 10f;      // a sign stays until its player is this much further off than SignRadius
+        private const int NEW_PER_UPDATE = 4;   // signs made per update (every 2 s): walking into a logged area spreads them out
         private static readonly int SignHash = "sign".GetStableHashCode();
         private struct Shown { public ZDOID sign; public string text; }
         private static readonly Dictionary<ZDOID, Shown> shown = new Dictionary<ZDOID, Shown>();
@@ -38,7 +40,11 @@ namespace Regrove
                 foreach (var zdo in near)
                 {
                     if (wanted.Count >= MAX) break;
-                    if (wanted.ContainsKey(zdo.m_uid) || Utils.DistanceXZ(zdo.GetPosition(), viewer) > r) continue;
+                    if (wanted.ContainsKey(zdo.m_uid)) continue;
+                    // a sign comes within SignRadius and goes past SignRadius + KEEP, so walking along the
+                    // edge doesn't make and remove the same signs over and over
+                    float d = Utils.DistanceXZ(zdo.GetPosition(), viewer);
+                    if (d > r + KEEP || (d > r && !shown.ContainsKey(zdo.m_uid))) continue;
                     int prefab = zdo.GetPrefab();
                     var on = Plugin.SignsOn.Value;
                     if ((on != Plugin.SignTargets.Saplings && Trees.Stumps.ContainsKey(prefab))
@@ -47,6 +53,7 @@ namespace Regrove
                 }
             }
             live.Clear();
+            int made = 0;
             foreach (var kv in wanted)
             {
                 string text = Text(kv.Value.target);
@@ -61,8 +68,9 @@ namespace Regrove
                         continue;
                     }
                 }
-                var made = Place(kv.Value.target, kv.Value.viewer, text);
-                if (made != null) shown[kv.Key] = new Shown { sign = made.m_uid, text = text };
+                if (made >= NEW_PER_UPDATE) { live.Remove(kv.Key); continue; }   // the next update makes it
+                var placed = Place(kv.Value.target, kv.Value.viewer, text);
+                if (placed != null) { shown[kv.Key] = new Shown { sign = placed.m_uid, text = text }; made++; }
             }
             gone.Clear();
             foreach (var kv in shown)
@@ -87,7 +95,10 @@ namespace Regrove
             // a regrowing sapling: the game's own grow time for it, from its seed
             long planted = target.GetLong(ZDOVars.s_plantTime);
             if (planted == 0L) return null;
-            float min = target.GetFloat("Plant.m_growTime"), max = target.GetFloat("Plant.m_growTimeMax");
+            var plant = ZNetScene.instance.GetPrefab(prefab)?.GetComponentInChildren<Plant>(true);
+            if (plant == null) return null;
+            // the sapling's own grow times unless Regrove changed them for this one
+            float min = target.GetFloat("Plant.m_growTime", plant.m_growTime), max = target.GetFloat("Plant.m_growTimeMax", plant.m_growTimeMax);
             var state = Random.state;
             Random.InitState(target.GetInt(ZDOVars.s_seed));
             float grow = Mathf.Lerp(min, max, Random.value);
@@ -106,11 +117,16 @@ namespace Regrove
             return kept;
         }
 
-        // played time, as the game's clock only runs while someone is online
+        // played time, as the game's clock only runs while someone is online. Over an hour in 5-minute
+        // steps, so a sign's text (and what every nearby player's game redraws) changes every 5 minutes.
         private static string Span(long ticks)
         {
             var t = System.TimeSpan.FromTicks(ticks);
-            if (t.TotalHours >= 1) return $"{(int)t.TotalHours}h {t.Minutes:D2}m";
+            if (t.TotalHours >= 1)
+            {
+                int minutes = (int)System.Math.Round(t.TotalMinutes / 5.0) * 5;
+                return $"about {minutes / 60}h {minutes % 60:D2}m";
+            }
             if (t.TotalMinutes >= 1) return $"{t.Minutes}m";
             return "under a minute";
         }

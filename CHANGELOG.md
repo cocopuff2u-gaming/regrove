@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1
+
+**Lighter on players' games**
+* Countdown signs no longer pop in and out at the edge: a sign appears within `SignRadius` and only goes once you're 10 m further off.
+* Walking into a logged area makes at most 4 new signs every 2 seconds, so a clearing full of stumps doesn't add 30 objects at once.
+* Waits over an hour show in 5-minute steps ("about 1h 30m"), so a sign's text changes every 5 minutes instead of every minute.
+* New saplings carry only the settings that differ from the game's own sapling, so there's a little less for each player's game to apply when it loads one. Saplings planted by 1.0.0 keep working as before.
+
 ## 1.0.0
 
 First release.

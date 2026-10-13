@@ -117,7 +117,9 @@ a fir sapling a player plants stays "Too cold" and never grows.
 * **Countdown signs** show time played, the same clock the trees grow on. They
   only stand near players (at most 64 at once), can't be removed or broken, and
   are never saved: they go away with a restart, or a moment after you switch
-  `CountdownSigns` off.
+  `CountdownSigns` off. To keep them light on players' games, a sign stays until
+  you're 10 m past `SignRadius`, at most 4 new ones appear every 2 seconds, and
+  waits over an hour change in 5-minute steps.
 * **With `SpecialWoodOnly`**, the player breaking a log makes the drops, and the
   server swaps each plain wood for the special one as it lands. On a very laggy
   connection a player can now and then pick a plain wood up before the swap.

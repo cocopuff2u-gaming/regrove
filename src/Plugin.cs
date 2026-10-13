@@ -12,7 +12,7 @@ namespace Regrove
     {
         public const string GUID = "com.cocopuff2u.regrove";
         public const string NAME = "Regrove";
-        public const string VERSION = "1.0.0";
+        public const string VERSION = "1.0.1";
         // does the same job; both at once would leave two saplings per stump
         private const string TREESURRECTION = "ArgusMagnus.ServersideQoL.Treesurrection";
 

@@ -61,6 +61,9 @@ namespace Regrove
             var sap = Find(s0, 0.5f, pineSapling);
             Check("dug stump leaves a sapling", sap.Count == 1 && Stumps.IsOurs(sap[0]) && sap[0].GetFloat("Plant.m_growRadius", -1f) == 0f
                 && sap[0].GetInt(ZDOVars.s_seed) != 0 && sap[0].GetLong(ZDOVars.s_plantTime) != 0L, $"{sap.Count} sapling(s)");
+            // only the settings that differ from the sapling's own (grow times at the default multiplier don't)
+            Check("sapling carries only the changed settings", sap.Count == 1 && sap[0].GetFloat("Plant.m_growTime", -1f) == -1f
+                && sap[0].GetFloat("Plant.m_growTimeMax", -1f) == -1f && sap[0].GetBool("Plant.m_tolerateCold"), "");
 
             // 2. countdown signs beside a sapling and a stump with a player near, gone when switched off
             var s1 = sites[1];
@@ -100,6 +103,30 @@ namespace Regrove
             Viewers.Clear();
             yield return new WaitForSeconds(4.5f);
             Check("signs go when switched off", Find(s0, 2.5f, sign).Count == 0 && Find(s1, 3f, sign).Count == 0, "");
+
+            // a sign stays while its player is within SignRadius + 10 m, and goes past that
+            Plugin.CountdownSigns.Value = true;
+            Viewers.Add(s1 + new Vector3(4f, 0f, 0f));
+            yield return new WaitForSeconds(4.5f);
+            int had = Find(s1, 3f, sign).Count;
+            Viewers.Clear(); Viewers.Add(s1 + new Vector3(Plugin.SignRadius.Value + 5f, 0f, 0f));
+            yield return new WaitForSeconds(4.5f);
+            int kept = Find(s1, 3f, sign).Count;
+            Viewers.Clear(); Viewers.Add(s1 + new Vector3(Plugin.SignRadius.Value + 15f, 0f, 0f));
+            yield return new WaitForSeconds(4.5f);
+            Check("a sign stays just past SignRadius and goes well past it", had == 1 && kept == 1 && Find(s1, 3f, sign).Count == 0, $"{had}, {kept}, {Find(s1, 3f, sign).Count}");
+
+            // walking into a logged area: at most 4 new signs an update, the rest follow
+            var clearing = sites[8];
+            for (int i = 0; i < 10; i++) { var st = Make(pineStump, clearing + new Vector3(i * 1.2f - 6f, 0f, (i % 3) * 3f)); st.Set(Stumps.SeenHash, ZNet.instance.GetTime().Ticks); }
+            Viewers.Clear(); Viewers.Add(clearing);
+            yield return new WaitForSeconds(2.2f);
+            int first = Find(clearing, 12f, sign).Count;
+            yield return new WaitForSeconds(6.5f);
+            Check("at most 4 new signs an update, all of them soon", first <= 4 && first > 0 && Find(clearing, 12f, sign).Count == 10, $"{first} at first, {Find(clearing, 12f, sign).Count} after");
+            Plugin.CountdownSigns.Value = false;
+            Viewers.Clear();
+            yield return new WaitForSeconds(4.5f);
 
             // 3. special wood: a dug pine stump's wood turns into core wood
             Plugin.SpecialWoodOnly.Value = true;
