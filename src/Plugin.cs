@@ -19,10 +19,14 @@ namespace Regrove
         internal static ConfigEntry<int> SaplingChance;
         internal static ConfigEntry<float> SaplingDelay;
         internal static ConfigEntry<float> GrowTime;
+        internal static ConfigEntry<bool> RemoveOnFell;
         internal static ConfigEntry<float> RegrowDays;
+        internal static ConfigEntry<Regrowth> RegrowAs;
         internal static ConfigEntry<bool> ProtectWards;
         internal static ConfigEntry<float> ProtectRadius;
         internal static bool blocked;
+
+        public enum Regrowth { Sapling, Tree }
 
         private void Awake()
         {
@@ -33,8 +37,12 @@ namespace Regrove
                 "Seconds between the stump going and the sapling appearing, so the last axe swing doesn't hit it");
             GrowTime = Config.Bind("Stumps", "GrowTimeMultiplier", 1f,
                 "How long a regrowing sapling takes compared with one a player plants (0.5 = twice as fast)");
+            RemoveOnFell = Config.Bind("Stumps", "RemoveOnFell", false,
+                "Stumps go as soon as their tree falls and the sapling is planted right away, so nobody has to dig them out. The stump's wood is lost");
             RegrowDays = Config.Bind("Regrow", "StumpRegrowDays", 3f,
-                "In-game days a stump can stand before it turns into a sapling by itself, without anyone removing it. 0 turns this off");
+                "In-game days a stump can stand before it grows back by itself, without anyone removing it. The game's clock only runs while someone is online. 0 turns this off");
+            RegrowAs = Config.Bind("Regrow", "RegrowAs", Regrowth.Sapling,
+                "What a left stump turns into. Sapling: a sapling of its tree, which then grows. Tree: the tree that stood there, the same kind and size, at once; swamp, Mistlands and Ashlands trees come back too");
             ProtectWards = Config.Bind("Protect", "InsideWards", true, "No saplings inside an active ward");
             ProtectRadius = Config.Bind("Protect", "BuildRadius", 20f,
                 new ConfigDescription("No saplings within this many metres of anything a player built. 0 turns this off", new AcceptableValueRange<float>(0f, 60f)));

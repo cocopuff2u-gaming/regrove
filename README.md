@@ -17,7 +17,8 @@ The name is regrow + grove: what was cut down comes back.
 | | |
 |---|---|
 | **Removed stumps leave a sapling** | Dig out or chop a stump and a sapling of its tree appears in its place a few seconds later. Beech, birch, fir, pine and oak: each stump gives back its own kind of tree. |
-| **Left stumps regrow too** | A stump nobody touches turns into a sapling by itself after a few in-game days, so old clearings fill back in without anyone having to tidy up. |
+| **Or no stumps at all** | Switch on `RemoveOnFell` and the stump goes as soon as the tree falls, with the sapling planted in its place. |
+| **Left stumps regrow too** | A stump nobody touches grows back by itself after a few in-game days, so old clearings fill back in without anyone having to tidy up. It becomes a sapling, or, if you like, straight away the tree that stood there, the same kind and size. |
 | **Your bases stay clear** | No saplings inside an active ward or close to anything a player built, so the ground you cleared for your base stays clear. |
 | **Grows like a planted tree** | The saplings grow like the ones players plant, and the time they take can be changed. They don't need cultivated ground and don't wither when other trees stand close. |
 | **Server only** | Nothing for players to install. It uses the game's own objects, so a vanilla game sees ordinary saplings. |
@@ -57,13 +58,6 @@ Most server hosts have a one-click option for BepInEx.
 
 That's it.
 
-**Using a mod manager** (r2modman, Gale)? Use its "import local mod" option
-with the zip. It puts the files in the right place.
-
-> **Using Treesurrection** (from ServersideQoL)? It does the same job, so
-> remove one of the two. While both are installed, Regrove stays switched off
-> and says so in the log.
-
 ---
 
 ## Settings
@@ -78,7 +72,9 @@ restart the server afterwards.
 | `SaplingChance` | `100` | Chance in percent that a removed stump leaves a sapling. |
 | `SaplingDelaySeconds` | `5` | Seconds before the sapling appears, so the last axe swing doesn't hit it. |
 | `GrowTimeMultiplier` | `1` | How long a sapling takes to grow, compared with one a player plants. `0.5` is twice as fast. |
-| `StumpRegrowDays` | `3` | In-game days (30 minutes each) a stump can stand before it turns into a sapling by itself. `0` turns this off. |
+| `RemoveOnFell` | `false` | Stumps go as soon as their tree falls, and the sapling is planted right away. The stump's wood is lost. |
+| `StumpRegrowDays` | `3` | In-game days (30 minutes each) a stump can stand before it grows back by itself. `0` turns this off. |
+| `RegrowAs` | `Sapling` | What a left stump turns into: `Sapling`, which then grows, or `Tree`, the tree that stood there, the same kind and size, at once. |
 | `InsideWards` | `true` | No saplings inside an active ward. |
 | `BuildRadius` | `20` | No saplings within this many metres of anything a player built. `0` turns this off. |
 
@@ -95,11 +91,14 @@ restart the server afterwards.
   stump it notes the time; after `StumpRegrowDays` from then, it regrows.
 * **A stump near a base is kept** and checked again after another
   `StumpRegrowDays`, in case the building has gone by then.
-* **Which trees come back**: beech, birch, fir, pine and oak, the trees players
-  can plant. The snowy mountain firs and the autumn birches come back as plain
-  firs and birches. Saplings only appear where they can grow, so snowy pines
-  high in the mountains, the swamp's ancient trees, the Mistlands' Yggdrasil
-  shoots and the Ashlands' trees leave their stumps.
+* **Which trees come back as saplings**: beech, birch, fir, pine and oak, the
+  trees players can plant. The snowy mountain firs and the autumn birches come
+  back as plain firs and birches. Saplings only appear where they can grow, so
+  snowy pines high in the mountains, the swamp's ancient trees, the Mistlands'
+  Yggdrasil shoots and the Ashlands' trees leave their stumps.
+* **With `RegrowAs = Tree`**, every left stump comes back as the very tree that
+  stood there, swamp, Mistlands and Ashlands trees included. Regrove notes which
+  tree fell as it falls; for older stumps it goes by the trees around them.
 
 ---
 
