@@ -26,9 +26,13 @@ namespace Regrove
             if (!Plugin.CountdownSigns.Value) { if (shown.Count > 0) RemoveAll(); return; }
             wanted.Clear();
             float r = Plugin.SignRadius.Value;
-            foreach (var peer in ZNet.instance.GetPeers())
+            var viewers = new List<Vector3>();
+            foreach (var peer in ZNet.instance.GetPeers()) viewers.Add(peer.m_refPos);
+#if SELFTEST
+            viewers.AddRange(Tests.Viewers);
+#endif
+            foreach (var viewer in viewers)
             {
-                Vector3 viewer = peer.m_refPos;
                 near.Clear();
                 ZDOMan.instance.FindSectorObjects(ZoneSystem.GetZone(viewer), new SimulationDistance(1, 0, classic: true), near);
                 foreach (var zdo in near)

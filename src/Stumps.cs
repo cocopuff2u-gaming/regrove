@@ -296,7 +296,7 @@ namespace Regrove
             return true;
         }
 
-        private static ZDO Create(int hash, Vector3 pos, Quaternion rot)
+        internal static ZDO Create(int hash, Vector3 pos, Quaternion rot)
         {
             var prefab = ZNetScene.instance.GetPrefab(hash);
             var view = prefab != null ? prefab.GetComponent<ZNetView>() : null;

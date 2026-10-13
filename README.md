@@ -148,6 +148,12 @@ and attach `BepInEx/LogOutput.log`.
 * [CHANGELOG.md](CHANGELOG.md): what changed in each version.
 * **Building from source**: `./build.sh --managed <server>/valheim_server_Data/Managed`
   (needs the .NET SDK 8+). The zip lands in `dist/`.
+* **Self-test**: build with `dotnet build src/Regrove.csproj -c Release -p:SelfTest=true`,
+  put that DLL on a test server, create an empty file `BepInEx/config/regrove.selftest`
+  and start the server. On an empty patch of Meadows it acts out what players do
+  (digging stumps, breaking logs, felling trees, standing near stumps), logs
+  `Regrove TEST PASS` or `FAIL` for each feature, then removes what it made.
+  The normal build has none of this in it.
 
 ## Credits
 

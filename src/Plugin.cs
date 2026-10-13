@@ -31,6 +31,7 @@ namespace Regrove
         internal static ConfigEntry<bool> CountdownSigns;
         internal static ConfigEntry<float> SignRadius;
         internal static bool blocked;
+        internal static int Reloads;
         private FileSystemWatcher watcher;
         private volatile bool changed;
         private float reloadAt;
@@ -97,6 +98,7 @@ namespace Regrove
                 Config.SaveOnConfigSet = false;
                 try { Config.Reload(); } finally { Config.SaveOnConfigSet = save; }
                 Trees.SettingsChanged();
+                Reloads++;
                 Logger.LogInfo("Settings reloaded");
             }
             catch (System.Exception e) { Logger.LogWarning("Settings not reloaded: " + e.Message); }
@@ -116,6 +118,9 @@ namespace Regrove
         {
             ReloadIfChanged();
             Stumps.Update();
+#if SELFTEST
+            Tests.Update(this);
+#endif
         }
     }
 }

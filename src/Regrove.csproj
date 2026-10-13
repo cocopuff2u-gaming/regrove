@@ -13,6 +13,8 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <NuGetAudit>false</NuGetAudit>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <!-- dotnet build -p:SelfTest=true: the server-side self-test (src/Tests.cs), never in a release -->
+    <DefineConstants Condition="'$(SelfTest)' == 'true'">$(DefineConstants);SELFTEST</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -81,7 +81,7 @@ namespace Regrove
         }
 
         // an item lying on the ground, made the way the game saves one
-        private static void Drop(int item, int stack, Vector3 pos)
+        internal static void Drop(int item, int stack, Vector3 pos)
         {
             var prefab = ZNetScene.instance.GetPrefab(item);
             var drop = prefab != null ? prefab.GetComponent<ItemDrop>() : null;
