@@ -63,8 +63,12 @@ namespace Regrove
         public static void Update()
         {
             if (!Active) return;
-            Trees.Load();
-            if (!Trees.Ready) return;
+            if (!Trees.Ready)
+            {
+                Trees.Load();
+                if (!Trees.Ready) return;
+                if (EnvMan.instance != null) ZLog.Log($"Regrove: an in-game day is {EnvMan.instance.m_dayLengthSec / 60} minutes");
+            }
             for (int i = pending.Count - 1; i >= 0; i--)
             {
                 var p = pending[i];

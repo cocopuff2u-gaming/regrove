@@ -61,7 +61,7 @@ namespace Regrove
                 var names = new List<string>();
                 foreach (int t in kv.Value)
                     names.Add(SaplingOf.TryGetValue(t, out int s)
-                        ? Name(t) + " -> " + Name(s) + " (" + scene.GetPrefab(s).GetComponentInChildren<Plant>(true).m_biome + ")"
+                        ? Name(t) + " -> " + Name(s) + " (" + Describe(scene.GetPrefab(s).GetComponentInChildren<Plant>(true)) + ")"
                         : Name(t) + " (no sapling)");
                 ZLog.Log($"Regrove: {Name(kv.Key)}: {string.Join(", ", names)}");
             }
@@ -78,6 +78,10 @@ namespace Regrove
                 if (t.Contains(kind)) return grownFrom.TryGetValue(plain.GetStableHashCode(), out sapling);
             return false;
         }
+
+        // what the game itself says about a sapling: where it grows, how long it takes, how much room it needs
+        private static string Describe(Plant p) =>
+            $"{p.m_biome}; grows in {p.m_growTime / 60f:F0}-{p.m_growTimeMax / 60f:F0} min, needs {p.m_growRadius:0.#} m of room";
 
         public static string Name(int prefab)
         {

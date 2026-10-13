@@ -66,17 +66,23 @@ Settings live in `BepInEx/config/com.cocopuff2u.regrove.cfg`. The file
 appears after the first start. Edit it while the server is stopped, or
 restart the server afterwards.
 
-| Setting | Default | What it does |
-|---|---|---|
-| `Enabled` | `true` | Turns the whole mod on or off. |
-| `SaplingChance` | `100` | Chance in percent that a removed stump leaves a sapling. |
-| `SaplingDelaySeconds` | `5` | Seconds before the sapling appears, so the last axe swing doesn't hit it. |
-| `GrowTimeMultiplier` | `1` | How long a sapling takes to grow, compared with one a player plants. `0.5` is twice as fast. |
-| `RemoveOnFell` | `false` | Stumps go as soon as their tree falls, and the sapling is planted right away. The stump's wood is lost. |
-| `StumpRegrowDays` | `3` | In-game days (30 minutes each) a stump can stand before it grows back by itself. `0` turns this off. |
-| `RegrowAs` | `Sapling` | What a left stump turns into: `Sapling`, which then grows, or `Tree`, the tree that stood there, the same kind and size, at once. |
-| `InsideWards` | `true` | No saplings inside an active ward. |
-| `BuildRadius` | `20` | No saplings within this many metres of anything a player built. `0` turns this off. |
+| Setting | Regrove default | Vanilla game | What it does |
+|---|---|---|---|
+| `Enabled` | `true` | | Turns the whole mod on or off. |
+| `SaplingChance` | `100` | `0`: a removed stump leaves nothing | Chance in percent that a removed stump leaves a sapling. |
+| `SaplingDelaySeconds` | `5` | | Seconds before the sapling appears, so the last axe swing doesn't hit it. |
+| `GrowTimeMultiplier` | `1` | `1`: beech, fir and pine take 50-83 minutes, birch 83-117, oak 100-133 | How long a sapling takes to grow, compared with one a player plants. `0.5` is twice as fast. |
+| `RemoveOnFell` | `false` | `false`: stumps stay until someone digs them out | Stumps go as soon as their tree falls, and the sapling is planted right away. The stump's wood is lost. |
+| `StumpRegrowDays` | `3` (90 minutes played) | `0`: stumps stand forever | In-game days (30 minutes each) a stump can stand before it grows back by itself. `0` turns this off. |
+| `RegrowAs` | `Sapling` | | What a left stump turns into: `Sapling`, which then grows, or `Tree`, the tree that stood there, the same kind and size, at once. |
+| `InsideWards` | `true` | | No saplings inside an active ward. |
+| `BuildRadius` | `20` | | No saplings within this many metres of anything a player built. `0` turns this off. |
+
+A blank means the game has nothing like it.
+
+Saplings Regrove plants also differ from ones a player plants in two ways
+that aren't settings: they grow among other trees (a planted sapling needs
+2 m of clear room around it, an oak 3 m) and they put up with mountain cold.
 
 ---
 
