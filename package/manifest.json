@@ -1,0 +1,9 @@
+{
+    "name": "Regrove",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/cocopuff2u-gaming/regrove",
+    "description": "Chopped forests grow back. Stumps turn into saplings of their tree, away from your bases. Server only.",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.2350"
+    ]
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <radialGradient id="sea" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="#2f6f9c"/><stop offset="1" stop-color="#14324f"/></radialGradient>
+    <clipPath id="c"><circle cx="128" cy="134" r="94"/></clipPath>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="#141a24"/>
+  <circle cx="128" cy="134" r="94" fill="url(#sea)"/>
+  <g clip-path="url(#c)">
+    <path d="M40 196c10-30 30-52 62-58 26-5 40 10 64 6 26-4 46 8 54 30 6 18 2 40-10 56H40z" fill="#d8c48a"/>
+    <path d="M50 200c10-24 28-42 54-48 24-5 38 9 60 5 22-4 40 6 46 24 5 14 2 30-6 42H50z" fill="#5f8a45"/>
+    <path d="M150 186c14 8 30 10 44 4" fill="none" stroke="#7fb0d4" stroke-width="5" stroke-linecap="round"/>
+    <path d="M70 184c16-6 30-2 42 8" fill="none" stroke="#8a6a3e" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+  </g>
+  <circle cx="128" cy="134" r="94" fill="none" stroke="#6fb7ff" stroke-width="3" opacity=".6"/>
+  <g fill="#07090d">
+    <!-- the young tree, tiers of a fir, rising out of the stump -->
+    <path d="M128 30 L150 62 L140 62 L164 92 L150 92 L176 124 L136 124 L136 150 L120 150 L120 124 L80 124 L106 92 L92 92 L116 62 L106 62 Z"/>
+    <!-- the old stump: a wide cut log with roots -->
+    <path d="M86 150 L170 150 L166 192 L186 206 L158 202 L150 210 L140 200 L116 200 L106 210 L98 202 L70 206 L90 192 Z"/>
+  </g>
+  <!-- the cut face and its rings -->
+  <ellipse cx="128" cy="150" rx="42" ry="9" fill="#2a1d12"/>
+  <ellipse cx="128" cy="150" rx="28" ry="5.5" fill="none" stroke="#6b4a2c" stroke-width="2"/>
+  <ellipse cx="128" cy="150" rx="14" ry="2.8" fill="none" stroke="#6b4a2c" stroke-width="2"/>
+  <!-- fresh green on the new growth -->
+  <path d="M128 40 L143 62 L128 56 Z M128 66 L156 92 L128 84 Z M128 96 L166 122 L128 114 Z" fill="#7fbf5a" opacity=".85"/>
+</svg>
