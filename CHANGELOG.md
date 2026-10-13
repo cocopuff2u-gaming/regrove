@@ -8,7 +8,7 @@ First release.
 * A stump left standing turns into a sapling by itself after `StumpRegrowDays` in-game days.
 * `RemoveOnFell`: the stump goes as soon as its tree falls and the sapling is planted right away.
 * `RegrowAs = Tree`: a left stump comes back as the tree that stood there, the same kind and size, swamp, Mistlands and Ashlands trees too.
-* No saplings inside active wards, near anything a player built, or on paths, roads and fields.
+* No saplings inside active wards or near anything a player built; `PathsAndFields` (off by default) keeps paths, roads and fields clear too.
 * `ExcludeTrees`: trees Regrove leaves alone.
 * `SpecialWoodOnly`: logs and stumps drop their tree's special wood (core wood, fine wood, ...) in place of plain wood.
 * `CountdownSigns`: signs beside stumps and saplings near players, with the time left (`SignsOn`: both, stumps or saplings).

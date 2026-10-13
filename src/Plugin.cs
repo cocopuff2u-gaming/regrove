@@ -67,7 +67,7 @@ namespace Regrove
             ProtectWards = Config.Bind("Protect", "InsideWards", true, "No saplings inside an active ward");
             ProtectRadius = Config.Bind("Protect", "BuildRadius", 20f,
                 new ConfigDescription("No saplings within this many metres of anything a player built. 0 turns this off", new AcceptableValueRange<float>(0f, 60f)));
-            ProtectGround = Config.Bind("Protect", "PathsAndFields", true,
+            ProtectGround = Config.Bind("Protect", "PathsAndFields", false,
                 "No saplings on paths, paved roads or cultivated ground, or within 2 m of them");
             ExcludeTrees = Config.Bind("Trees", "ExcludeTrees", "",
                 "Trees Regrove leaves alone, by name or the start of a name, comma separated (e.g. \"SwampTree, Oak\"). The server log lists every tree's name at start");

@@ -19,7 +19,7 @@ The name is regrow + grove: what was cut down comes back.
 | **Removed stumps leave a sapling** | Dig out or chop a stump and a sapling of its tree appears in its place a few seconds later. Beech, birch, fir, pine and oak: each stump gives back its own kind of tree. |
 | **Or no stumps at all** | Switch on `RemoveOnFell` and the stump goes as soon as the tree falls, with the sapling planted in its place and the stump's wood dropped on the ground. |
 | **Left stumps regrow too** | A stump nobody touches grows back by itself after a few in-game days, so old clearings fill back in without anyone having to tidy up. It becomes a sapling, or, if you like, straight away the tree that stood there, the same kind and size. |
-| **Your bases stay clear** | No saplings inside an active ward, close to anything a player built, or on paths, roads and fields, so the ground you cleared stays clear. |
+| **Your bases stay clear** | No saplings inside an active ward or close to anything a player built, and, if you like, none on paths, roads and fields either, so the ground you cleared stays clear. |
 | **Only special wood** | Switch on `SpecialWoodOnly` and logs and stumps drop core wood, fine wood, ancient bark and the like in place of plain wood. |
 | **Countdown signs** | Switch on `CountdownSigns` and stumps and saplings near a player get a small sign saying how long they have left. |
 | **Pick your trees** | Leave some trees out entirely, say swamp trees or oaks. |
@@ -84,7 +84,7 @@ change a second after you save, and says `Settings reloaded` in the log.
 | `RoundMinutes` | `5` | | Minutes between rounds, how often the world is checked for left stumps that are due. |
 | `InsideWards` | `true` | | No saplings inside an active ward. |
 | `BuildRadius` | `20` | | No saplings within this many metres of anything a player built. `0` turns this off. |
-| `PathsAndFields` | `true` | | No saplings on paths, paved roads or cultivated ground, or within 2 m of them. |
+| `PathsAndFields` | `false` | | No saplings on paths, paved roads or cultivated ground, or within 2 m of them. |
 | `ExcludeTrees` | (empty) | | Trees Regrove leaves alone, by name or the start of a name, comma separated, e.g. `SwampTree, Oak`. The server log lists every tree's name at start. |
 | `SpecialWoodOnly` | `false` | `false`: logs drop a mix of plain and special wood, stumps plain wood | Logs and stumps drop their tree's special wood in place of plain wood, one for one (see below). |
 | `CountdownSigns` | `false` | | A small sign beside each stump and regrowing sapling near a player, saying how long it has left. |
