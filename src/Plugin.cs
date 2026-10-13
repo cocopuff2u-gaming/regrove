@@ -1,3 +1,4 @@
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Bootstrap;
@@ -24,7 +25,15 @@ namespace Regrove
         internal static ConfigEntry<Regrowth> RegrowAs;
         internal static ConfigEntry<bool> ProtectWards;
         internal static ConfigEntry<float> ProtectRadius;
+        internal static ConfigEntry<bool> ProtectGround;
+        internal static ConfigEntry<string> ExcludeTrees;
+        internal static ConfigEntry<bool> SpecialWoodOnly;
+        internal static ConfigEntry<bool> CountdownSigns;
+        internal static ConfigEntry<float> SignRadius;
         internal static bool blocked;
+        private FileSystemWatcher watcher;
+        private volatile bool changed;
+        private float reloadAt;
 
         public enum Regrowth { Sapling, Tree }
 
@@ -46,8 +55,51 @@ namespace Regrove
             ProtectWards = Config.Bind("Protect", "InsideWards", true, "No saplings inside an active ward");
             ProtectRadius = Config.Bind("Protect", "BuildRadius", 20f,
                 new ConfigDescription("No saplings within this many metres of anything a player built. 0 turns this off", new AcceptableValueRange<float>(0f, 60f)));
+            ProtectGround = Config.Bind("Protect", "PathsAndFields", true,
+                "No saplings on paths, paved roads or cultivated ground, or within 2 m of them");
+            ExcludeTrees = Config.Bind("Trees", "ExcludeTrees", "",
+                "Trees Regrove leaves alone, by name or the start of a name, comma separated (e.g. \"SwampTree, Oak\"). The server log lists every tree's name at start");
+            SpecialWoodOnly = Config.Bind("Wood", "SpecialWoodOnly", false,
+                "Logs and stumps drop their tree's special wood in place of plain wood, one for one: core wood from pines, fine wood from birches and oaks, ancient bark from swamp trees, Yggdrasil wood, blackwood, frost wood. Beech and fir have none and still give plain wood");
+            CountdownSigns = Config.Bind("Signs", "CountdownSigns", false,
+                "A small sign beside each stump and regrowing sapling near a player, saying how long it has left (time played). Plain game signs, so players need no mod; they are never saved");
+            SignRadius = Config.Bind("Signs", "SignRadius", 15f,
+                new ConfigDescription("How close, in metres, a stump or sapling must be to a player to get a sign", new AcceptableValueRange<float>(3f, 40f)));
             new Harmony(GUID).PatchAll(Assembly.GetExecutingAssembly());
+            WatchConfig();
             Logger.LogInfo($"{NAME} {VERSION} loaded");
+        }
+
+        // settings changed in the file take effect a moment later, no restart needed
+        private void WatchConfig()
+        {
+            try
+            {
+                watcher = new FileSystemWatcher(Path.GetDirectoryName(Config.ConfigFilePath), Path.GetFileName(Config.ConfigFilePath));
+                watcher.Changed += (s, e) => changed = true;
+                watcher.Created += (s, e) => changed = true;
+                watcher.Renamed += (s, e) => changed = true;
+                watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size;
+                watcher.EnableRaisingEvents = true;
+            }
+            catch (System.Exception e) { Logger.LogWarning("Settings won't reload by themselves: " + e.Message); }
+        }
+
+        private void ReloadIfChanged()
+        {
+            if (changed) { changed = false; reloadAt = UnityEngine.Time.time + 1f; }   // wait for the editor to finish writing
+            if (reloadAt == 0f || UnityEngine.Time.time < reloadAt) return;
+            reloadAt = 0f;
+            try
+            {
+                // (without saving the file back, which would only start another reload)
+                bool save = Config.SaveOnConfigSet;
+                Config.SaveOnConfigSet = false;
+                try { Config.Reload(); } finally { Config.SaveOnConfigSet = save; }
+                Trees.SettingsChanged();
+                Logger.LogInfo("Settings reloaded");
+            }
+            catch (System.Exception e) { Logger.LogWarning("Settings not reloaded: " + e.Message); }
         }
 
         // every plugin has loaded by now
@@ -60,6 +112,10 @@ namespace Regrove
             }
         }
 
-        private void Update() => Stumps.Update();
+        private void Update()
+        {
+            ReloadIfChanged();
+            Stumps.Update();
+        }
     }
 }

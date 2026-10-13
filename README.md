@@ -17,11 +17,15 @@ The name is regrow + grove: what was cut down comes back.
 | | |
 |---|---|
 | **Removed stumps leave a sapling** | Dig out or chop a stump and a sapling of its tree appears in its place a few seconds later. Beech, birch, fir, pine and oak: each stump gives back its own kind of tree. |
-| **Or no stumps at all** | Switch on `RemoveOnFell` and the stump goes as soon as the tree falls, with the sapling planted in its place. |
+| **Or no stumps at all** | Switch on `RemoveOnFell` and the stump goes as soon as the tree falls, with the sapling planted in its place and the stump's wood dropped on the ground. |
 | **Left stumps regrow too** | A stump nobody touches grows back by itself after a few in-game days, so old clearings fill back in without anyone having to tidy up. It becomes a sapling, or, if you like, straight away the tree that stood there, the same kind and size. |
-| **Your bases stay clear** | No saplings inside an active ward or close to anything a player built, so the ground you cleared for your base stays clear. |
+| **Your bases stay clear** | No saplings inside an active ward, close to anything a player built, or on paths, roads and fields, so the ground you cleared stays clear. |
+| **Only special wood** | Switch on `SpecialWoodOnly` and logs and stumps drop core wood, fine wood, ancient bark and the like in place of plain wood. |
+| **Countdown signs** | Switch on `CountdownSigns` and stumps and saplings near a player get a small sign saying how long they have left. |
+| **Pick your trees** | Leave some trees out entirely, say swamp trees or oaks. |
 | **Grows like a planted tree** | The saplings grow like the ones players plant, and the time they take can be changed. They don't need cultivated ground and don't wither when other trees stand close. |
-| **Server only** | Nothing for players to install. It uses the game's own objects, so a vanilla game sees ordinary saplings. |
+| **Server only** | Nothing for players to install. It uses the game's own objects, so a vanilla game sees ordinary saplings and signs. |
+| **Change settings while it runs** | Edit the settings file and the change takes effect a second later, no restart. |
 | **Light on your server** | Stumps are checked a slice of the world at a time, every few minutes. Left stumps only change where no player is, at most 50 per round. |
 
 ---
@@ -63,8 +67,8 @@ That's it.
 ## Settings
 
 Settings live in `BepInEx/config/com.cocopuff2u.regrove.cfg`. The file
-appears after the first start. Edit it while the server is stopped, or
-restart the server afterwards.
+appears after the first start. Edit it any time: Regrove picks up the
+change a second after you save, and says `Settings reloaded` in the log.
 
 | Setting | Regrove default | Vanilla game | What it does |
 |---|---|---|---|
@@ -77,8 +81,18 @@ restart the server afterwards.
 | `RegrowAs` | `Sapling` | | What a left stump turns into: `Sapling`, which then grows, or `Tree`, the tree that stood there, the same kind and size, at once. |
 | `InsideWards` | `true` | | No saplings inside an active ward. |
 | `BuildRadius` | `20` | | No saplings within this many metres of anything a player built. `0` turns this off. |
+| `PathsAndFields` | `true` | | No saplings on paths, paved roads or cultivated ground, or within 2 m of them. |
+| `ExcludeTrees` | (empty) | | Trees Regrove leaves alone, by name or the start of a name, comma separated, e.g. `SwampTree, Oak`. The server log lists every tree's name at start. |
+| `SpecialWoodOnly` | `false` | `false`: logs drop a mix of plain and special wood, stumps plain wood | Logs and stumps drop their tree's special wood in place of plain wood, one for one (see below). |
+| `CountdownSigns` | `false` | | A small sign beside each stump and regrowing sapling near a player, saying how long it has left. |
+| `SignRadius` | `15` | | How close, in metres, a stump or sapling must be to a player to get a sign. |
 
 A blank means the game has nothing like it.
+
+**Special wood by tree** (from the game's own drop lists): pine gives core
+wood, birch and oak fine wood, swamp trees ancient bark, Mistlands trees
+Yggdrasil wood, Ashlands trees blackwood, and snowy and big firs frost wood.
+Beech and plain fir have no special wood and still give plain wood.
 
 Saplings Regrove plants also differ from ones a player plants in two ways
 that aren't settings: they grow among other trees (a planted sapling needs
@@ -95,6 +109,13 @@ that aren't settings: they grow among other trees (a planted sapling needs
   Come back after the grow time and the sapling turns into a tree within seconds.
 * **Stumps already in your world count too.** The first time Regrove sees a
   stump it notes the time; after `StumpRegrowDays` from then, it regrows.
+* **Countdown signs** show time played, the same clock the trees grow on. They
+  only stand near players (at most 64 at once), can't be removed or broken, and
+  are never saved: they go away with a restart, or a moment after you switch
+  `CountdownSigns` off.
+* **With `SpecialWoodOnly`**, the player breaking a log makes the drops, and the
+  server swaps each plain wood for the special one as it lands. On a very laggy
+  connection a player can now and then pick a plain wood up before the swap.
 * **A stump near a base is kept** and checked again after another
   `StumpRegrowDays`, in case the building has gone by then.
 * **Which trees come back as saplings**: beech, birch, fir, pine and oak, the

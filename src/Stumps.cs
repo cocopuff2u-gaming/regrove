@@ -9,7 +9,7 @@ namespace Regrove
     // All on the server, with plain game objects, so players need no mod.
     internal static class Stumps
     {
-        private static readonly int SeenHash = "regrove_seen".GetStableHashCode();   // when the sweep first saw a stump
+        internal static readonly int SeenHash = "regrove_seen".GetStableHashCode();   // when the sweep first saw a stump
         private static readonly int TreeHash = "regrove_tree".GetStableHashCode();   // the tree that left a stump
         private static readonly int OursHash = "HasFieldsPlant".GetStableHashCode();  // a sapling Regrove made
         private const int SWEEP_BUDGET = 4000;          // objects looked at per frame
@@ -46,9 +46,11 @@ namespace Regrove
                 var zdo = __instance.GetZDO(uid);
                 if (zdo == null) return;
                 int prefab = zdo.GetPrefab();
+                Wood.Broken(zdo);
                 // a tree fell: its stump turns up next to it in a moment
                 if (Trees.StumpOf.TryGetValue(prefab, out int stump))
                 {
+                    if (Trees.Excluded(prefab)) return;
                     felled.Add(new Felled { until = Time.time + FALL_WATCH, tree = prefab, stump = stump, pos = zdo.GetPosition() });
                     return;
                 }
@@ -74,8 +76,11 @@ namespace Regrove
                 var p = pending[i];
                 if (Time.time < p.at) continue;
                 pending.RemoveAt(i);
-                if (!Protected(p.pos)) Sow(TreeFor(p.stump, p.tree, p.pos), p.pos, p.rot);
+                int tree = TreeFor(p.stump, p.tree, p.pos);
+                if (!Trees.Excluded(tree) && !Protected(p.pos)) Sow(tree, p.pos, p.rot);
             }
+            Wood.Update();
+            Signs.Update();
             WatchFelled();
             RemoveStumps();
             Sweep();
@@ -116,7 +121,8 @@ namespace Regrove
                 if (zdo == null) continue;   // dug out meanwhile: the usual sapling is on its way
                 var pos = zdo.GetPosition();
                 if (!Protected(pos) && Random.Range(0, 100) < Plugin.SaplingChance.Value) Sow(r.tree, pos, zdo.GetRotation());
-                Destroy(zdo);
+                Wood.StumpDrops(zdo.GetPrefab(), pos);
+                Remove(zdo);
             }
         }
 
@@ -133,8 +139,7 @@ namespace Regrove
                 sector = 0; seen = stamped = busy = growing = 0; due.Clear();
             }
             long now = ZNet.instance.GetTime().Ticks;
-            long day = (EnvMan.instance != null ? EnvMan.instance.m_dayLengthSec : 1800L) * System.TimeSpan.TicksPerSecond;
-            long age = (long)(Plugin.RegrowDays.Value * day);
+            long age = RegrowAge();
             int budget = SWEEP_BUDGET;
             while (sector < bySector.Length && budget > 0)
             {
@@ -165,14 +170,14 @@ namespace Regrove
                 if (zdo == null || Busy(zdo)) continue;
                 var pos = zdo.GetPosition();
                 int tree = TreeFor(zdo.GetPrefab(), zdo.GetInt(TreeHash), pos);
-                bool done = !Protected(pos) && (asTree ? Grow(tree, zdo) : Sow(tree, pos, zdo.GetRotation()));
-                // kept, or no sapling can grow there: ask again in another StumpRegrowDays
+                bool done = !Trees.Excluded(tree) && !Protected(pos) && (asTree ? Grow(tree, zdo) : Sow(tree, pos, zdo.GetRotation()));
+                // kept, left alone, or no sapling can grow there: ask again in another StumpRegrowDays
                 if (!done) { zdo.Set(SeenHash, now); kept++; continue; }
-                Destroy(zdo);
+                Remove(zdo);
                 grown++;
             }
             if (due.Count > 0 || sweeps++ == 0)
-                ZLog.Log($"Regrove: {seen} stumps standing ({stamped} new, {busy} near players), {grown} turned into {(asTree ? "trees" : "saplings")}, {kept} kept (near a base, or nothing grows there); {growing} saplings regrowing");
+                ZLog.Log($"Regrove: {seen} stumps standing ({stamped} new, {busy} near players), {grown} turned into {(asTree ? "trees" : "saplings")}, {kept} kept (near a base or path, left alone, or nothing grows there); {growing} saplings regrowing");
             due.Clear();
         }
 
@@ -184,8 +189,23 @@ namespace Regrove
             return owner != ZDOMan.GetSessionID() && ZNet.instance.GetPeer(owner) != null;
         }
 
+        // StumpRegrowDays in the game's ticks
+        internal static long RegrowAge()
+        {
+            long day = (EnvMan.instance != null ? EnvMan.instance.m_dayLengthSec : 1800L) * System.TimeSpan.TicksPerSecond;
+            return (long)(Plugin.RegrowDays.Value * day);
+        }
+
+        internal static bool IsOurs(ZDO sapling) => sapling.GetBool(OursHash);
+
+        internal static int TreeOf(ZDO stump)
+        {
+            if (!treeOf.TryGetValue(stump.m_uid, out int known)) known = stump.GetInt(TreeHash);
+            return TreeFor(stump.GetPrefab(), known, stump.GetPosition());
+        }
+
         // the game's own way to remove an object it doesn't own: take it over first
-        private static void Destroy(ZDO zdo)
+        internal static void Remove(ZDO zdo)
         {
             ours.Add(zdo.m_uid);
             treeOf.Remove(zdo.m_uid);
@@ -200,8 +220,9 @@ namespace Regrove
             ZDOMan.instance.FindSectorObjects(ZoneSystem.GetZone(pos), new SimulationDistance(1, 0, classic: true), near);
         }
 
-        private static bool Protected(Vector3 pos)
+        internal static bool Protected(Vector3 pos)
         {
+            if (Plugin.ProtectGround.Value && Ground.Worked(pos)) return true;
             bool wards = Plugin.ProtectWards.Value;
             float radius = Plugin.ProtectRadius.Value;
             if (!wards && radius <= 0f) return false;
@@ -250,6 +271,7 @@ namespace Regrove
             var zdo = Create(hash, pos, rot);
             if (zdo == null) return false;
             zdo.Set(ZDOVars.s_plantTime, ZNet.instance.GetTime().Ticks);
+            zdo.Set(ZDOVars.s_seed, (int)(zdo.m_uid.ID + zdo.m_uid.UserID));   // the game's own default, set now so the countdown knows it
             float m = Mathf.Max(0f, Plugin.GrowTime.Value);
             zdo.Set("HasFields", true);
             zdo.Set("HasFieldsPlant", true);
