@@ -11,7 +11,9 @@ First release.
 * No saplings inside active wards, near anything a player built, or on paths, roads and fields.
 * `ExcludeTrees`: trees Regrove leaves alone.
 * `SpecialWoodOnly`: logs and stumps drop their tree's special wood (core wood, fine wood, ...) in place of plain wood.
-* `CountdownSigns`: signs beside stumps and saplings near players, with the time left.
+* `CountdownSigns`: signs beside stumps and saplings near players, with the time left (`SignsOn`: both, stumps or saplings).
+* `RegrowChance`: some left stumps can stay for good. `MaxPerRound` and `RoundMinutes` set how many grow back and how often.
+* The round's cost on the server is in the log (about 0.3 ms a frame on a world of 2.9 million objects).
 * Settings take effect when the file is saved, no restart.
 * Snowy mountain firs and autumn birches come back as plain firs and birches. A sapling only appears where it can grow.
 * Server only: players need nothing.

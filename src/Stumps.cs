@@ -12,9 +12,7 @@ namespace Regrove
         internal static readonly int SeenHash = "regrove_seen".GetStableHashCode();   // when the sweep first saw a stump
         private static readonly int TreeHash = "regrove_tree".GetStableHashCode();   // the tree that left a stump
         private static readonly int OursHash = "HasFieldsPlant".GetStableHashCode();  // a sapling Regrove made
-        private const int SWEEP_BUDGET = 4000;          // objects looked at per frame
-        private const float SWEEP_EVERY = 300f;         // seconds between sweeps
-        private const int MAX_PER_SWEEP = 50;           // stumps turned back into trees per sweep
+        private const int SWEEP_BUDGET = 2000;          // objects looked at per frame
         private const float FALL_WATCH = 15f;           // seconds a felled tree's stump is looked for
 
         private struct Pending { public float at; public int stump, tree; public Vector3 pos; public Quaternion rot; }
@@ -28,7 +26,11 @@ namespace Regrove
         private static readonly Dictionary<ZDOID, int> treeOf = new Dictionary<ZDOID, int>();
         private static readonly List<ZDO> near = new List<ZDO>();
         private static readonly List<ZDOID> due = new List<ZDOID>();
-        private static int sector = -1, seen, stamped, busy, growing, sweeps;
+        private static int sector = -1, index, seen, stamped, busy, growing, sweeps;
+        // what Regrove costs the server: per round, its time on the main thread and its slowest frame
+        private static readonly System.Diagnostics.Stopwatch clock = new System.Diagnostics.Stopwatch();
+        private static double roundMs, slowestMs;
+        private static int roundFrames;
         private static float nextSweep = 60f;
 
         private static bool Active => Plugin.Enabled.Value && !Plugin.blocked
@@ -65,6 +67,15 @@ namespace Regrove
         public static void Update()
         {
             if (!Active) return;
+            clock.Restart();
+            Tick();
+            double ms = clock.Elapsed.TotalMilliseconds;
+            roundMs += ms; roundFrames++;
+            if (ms > slowestMs) slowestMs = ms;
+        }
+
+        private static void Tick()
+        {
             if (!Trees.Ready)
             {
                 Trees.Load();
@@ -136,18 +147,22 @@ namespace Regrove
             if (sector < 0)
             {
                 if (Time.time < nextSweep) return;
-                sector = 0; seen = stamped = busy = growing = 0; due.Clear();
+                sector = 0; index = 0; seen = stamped = busy = growing = 0; due.Clear();
+                roundMs = slowestMs = 0; roundFrames = 0;
             }
             long now = ZNet.instance.GetTime().Ticks;
             long age = RegrowAge();
             int budget = SWEEP_BUDGET;
+            // a slice each frame; a crowded sector is split across frames too
             while (sector < bySector.Length && budget > 0)
             {
-                var list = bySector[sector++];
-                if (list == null) continue;
-                budget -= list.Count;
-                foreach (var zdo in list)
+                var list = bySector[sector];
+                if (list == null || index >= list.Count) { sector++; index = 0; continue; }
+                int end = Mathf.Min(list.Count, index + budget);
+                budget -= end - index;
+                for (; index < end; index++)
                 {
+                    var zdo = list[index];
                     int prefab = zdo.GetPrefab();
                     if (Trees.Saplings.Contains(prefab) && zdo.GetBool(OursHash)) growing++;
                     if (!Trees.Stumps.ContainsKey(prefab)) continue;
@@ -156,12 +171,12 @@ namespace Regrove
                     if (treeOf.TryGetValue(zdo.m_uid, out int tree)) { zdo.Set(TreeHash, tree); treeOf.Remove(zdo.m_uid); }
                     long first = zdo.GetLong(SeenHash);
                     if (first == 0L) { zdo.Set(SeenHash, now); stamped++; }
-                    else if (now - first >= age && due.Count < MAX_PER_SWEEP) due.Add(zdo.m_uid);
+                    else if (now - first >= age && due.Count < Plugin.MaxPerRound.Value && WillRegrow(zdo)) due.Add(zdo.m_uid);
                 }
             }
             if (sector < bySector.Length) return;
             sector = -1;
-            nextSweep = Time.time + SWEEP_EVERY;
+            nextSweep = Time.time + Plugin.RoundMinutes.Value * 60f;
             bool asTree = Plugin.RegrowAs.Value == Plugin.Regrowth.Tree;
             int grown = 0, kept = 0;
             foreach (var id in due)
@@ -177,7 +192,7 @@ namespace Regrove
                 grown++;
             }
             if (due.Count > 0 || sweeps++ == 0)
-                ZLog.Log($"Regrove: {seen} stumps standing ({stamped} new, {busy} near players), {grown} turned into {(asTree ? "trees" : "saplings")}, {kept} kept (near a base or path, left alone, or nothing grows there); {growing} saplings regrowing");
+                ZLog.Log($"Regrove: {seen} stumps standing ({stamped} new, {busy} near players), {grown} turned into {(asTree ? "trees" : "saplings")}, {kept} kept (near a base or path, left alone, or nothing grows there); {growing} saplings regrowing; round took {roundMs:0} ms over {roundFrames} frames, slowest frame {slowestMs:0.00} ms");
             due.Clear();
         }
 
@@ -187,6 +202,16 @@ namespace Regrove
             if (!zdo.HasOwner()) return false;
             long owner = zdo.GetOwner();
             return owner != ZDOMan.GetSessionID() && ZNet.instance.GetPeer(owner) != null;
+        }
+
+        // RegrowChance, rolled once per stump: its id decides, so the same stump always gets the same
+        // answer (rolling again every round would let every stump through in the end)
+        internal static bool WillRegrow(ZDO stump)
+        {
+            int chance = Plugin.RegrowChance.Value;
+            if (chance >= 100) return true;
+            uint h = unchecked((uint)stump.m_uid.ID * 2654435761u ^ (uint)stump.m_uid.UserID * 40503u);
+            return h % 100 < chance;
         }
 
         // StumpRegrowDays in the game's ticks

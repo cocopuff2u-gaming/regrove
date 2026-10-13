@@ -26,7 +26,7 @@ The name is regrow + grove: what was cut down comes back.
 | **Grows like a planted tree** | The saplings grow like the ones players plant, and the time they take can be changed. They don't need cultivated ground and don't wither when other trees stand close. |
 | **Server only** | Nothing for players to install. It uses the game's own objects, so a vanilla game sees ordinary saplings and signs. |
 | **Change settings while it runs** | Edit the settings file and the change takes effect a second later, no restart. |
-| **Light on your server** | Stumps are checked a slice of the world at a time, every few minutes. Left stumps only change where no player is, at most 50 per round. |
+| **Light on your server** | Left stumps are checked a slice of the world at a time, a round every 5 minutes. On a world of 2.9 million objects a round costs the server about 0.3 ms a frame for half a minute, its slowest frame 1.3 ms; the log shows the numbers for yours. Left stumps only change where no player is, at most 50 per round. |
 
 ---
 
@@ -79,12 +79,16 @@ change a second after you save, and says `Settings reloaded` in the log.
 | `RemoveOnFell` | `false` | `false`: stumps stay until someone digs them out | Stumps go as soon as their tree falls, and the sapling is planted right away. The stump's wood is lost. |
 | `StumpRegrowDays` | `3` (90 minutes played) | `0`: stumps stand forever | In-game days (30 minutes each) a stump can stand before it grows back by itself. `0` turns this off. |
 | `RegrowAs` | `Sapling` | | What a left stump turns into: `Sapling`, which then grows, or `Tree`, the tree that stood there, the same kind and size, at once. |
+| `RegrowChance` | `100` | | Chance in percent that a left stump grows back at all. Each stump's answer is fixed, so below 100 some stumps simply stay and old clearings fill in patchily. |
+| `MaxPerRound` | `50` | | Left stumps that may grow back in one round. |
+| `RoundMinutes` | `5` | | Minutes between rounds, how often the world is checked for left stumps that are due. |
 | `InsideWards` | `true` | | No saplings inside an active ward. |
 | `BuildRadius` | `20` | | No saplings within this many metres of anything a player built. `0` turns this off. |
 | `PathsAndFields` | `true` | | No saplings on paths, paved roads or cultivated ground, or within 2 m of them. |
 | `ExcludeTrees` | (empty) | | Trees Regrove leaves alone, by name or the start of a name, comma separated, e.g. `SwampTree, Oak`. The server log lists every tree's name at start. |
 | `SpecialWoodOnly` | `false` | `false`: logs drop a mix of plain and special wood, stumps plain wood | Logs and stumps drop their tree's special wood in place of plain wood, one for one (see below). |
 | `CountdownSigns` | `false` | | A small sign beside each stump and regrowing sapling near a player, saying how long it has left. |
+| `SignsOn` | `Both` | | Which get a countdown sign: `Both`, `Stumps` or `Saplings`. |
 | `SignRadius` | `15` | | How close, in metres, a stump or sapling must be to a player to get a sign. |
 
 A blank means the game has nothing like it.

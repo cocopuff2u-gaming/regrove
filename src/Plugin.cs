@@ -23,6 +23,10 @@ namespace Regrove
         internal static ConfigEntry<bool> RemoveOnFell;
         internal static ConfigEntry<float> RegrowDays;
         internal static ConfigEntry<Regrowth> RegrowAs;
+        internal static ConfigEntry<int> RegrowChance;
+        internal static ConfigEntry<int> MaxPerRound;
+        internal static ConfigEntry<float> RoundMinutes;
+        internal static ConfigEntry<SignTargets> SignsOn;
         internal static ConfigEntry<bool> ProtectWards;
         internal static ConfigEntry<float> ProtectRadius;
         internal static ConfigEntry<bool> ProtectGround;
@@ -37,6 +41,7 @@ namespace Regrove
         private float reloadAt;
 
         public enum Regrowth { Sapling, Tree }
+        public enum SignTargets { Both, Stumps, Saplings }
 
         private void Awake()
         {
@@ -53,6 +58,12 @@ namespace Regrove
                 "In-game days a stump can stand before it grows back by itself, without anyone removing it. The game's clock only runs while someone is online. 0 turns this off");
             RegrowAs = Config.Bind("Regrow", "RegrowAs", Regrowth.Sapling,
                 "What a left stump turns into. Sapling: a sapling of its tree, which then grows. Tree: the tree that stood there, the same kind and size, at once; swamp, Mistlands and Ashlands trees come back too");
+            RegrowChance = Config.Bind("Regrow", "RegrowChance", 100,
+                new ConfigDescription("Chance in percent that a left stump grows back at all. Each stump's chance is fixed (the same stump always gets the same answer), so below 100 some stumps simply stay, and old clearings fill in patchily", new AcceptableValueRange<int>(0, 100)));
+            MaxPerRound = Config.Bind("Regrow", "MaxPerRound", 50,
+                new ConfigDescription("Left stumps that may grow back in one round", new AcceptableValueRange<int>(1, 1000)));
+            RoundMinutes = Config.Bind("Regrow", "RoundMinutes", 5f,
+                new ConfigDescription("Minutes between rounds: how often the world is checked for left stumps that are due", new AcceptableValueRange<float>(1f, 60f)));
             ProtectWards = Config.Bind("Protect", "InsideWards", true, "No saplings inside an active ward");
             ProtectRadius = Config.Bind("Protect", "BuildRadius", 20f,
                 new ConfigDescription("No saplings within this many metres of anything a player built. 0 turns this off", new AcceptableValueRange<float>(0f, 60f)));
@@ -64,6 +75,8 @@ namespace Regrove
                 "Logs and stumps drop their tree's special wood in place of plain wood, one for one: core wood from pines, fine wood from birches and oaks, ancient bark from swamp trees, Yggdrasil wood, blackwood, frost wood. Beech and fir have none and still give plain wood");
             CountdownSigns = Config.Bind("Signs", "CountdownSigns", false,
                 "A small sign beside each stump and regrowing sapling near a player, saying how long it has left (time played). Plain game signs, so players need no mod; they are never saved");
+            SignsOn = Config.Bind("Signs", "SignsOn", SignTargets.Both,
+                "Which get a countdown sign: Both, Stumps or Saplings");
             SignRadius = Config.Bind("Signs", "SignRadius", 15f,
                 new ConfigDescription("How close, in metres, a stump or sapling must be to a player to get a sign", new AcceptableValueRange<float>(3f, 40f)));
             new Harmony(GUID).PatchAll(Assembly.GetExecutingAssembly());

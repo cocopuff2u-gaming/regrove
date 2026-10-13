@@ -40,7 +40,9 @@ namespace Regrove
                     if (wanted.Count >= MAX) break;
                     if (wanted.ContainsKey(zdo.m_uid) || Utils.DistanceXZ(zdo.GetPosition(), viewer) > r) continue;
                     int prefab = zdo.GetPrefab();
-                    if (Trees.Stumps.ContainsKey(prefab) || (Trees.Saplings.Contains(prefab) && Stumps.IsOurs(zdo)))
+                    var on = Plugin.SignsOn.Value;
+                    if ((on != Plugin.SignTargets.Saplings && Trees.Stumps.ContainsKey(prefab))
+                        || (on != Plugin.SignTargets.Stumps && Trees.Saplings.Contains(prefab) && Stumps.IsOurs(zdo)))
                         wanted[zdo.m_uid] = (zdo, viewer);
                 }
             }
@@ -74,7 +76,7 @@ namespace Regrove
             int prefab = target.GetPrefab();
             if (Trees.Stumps.ContainsKey(prefab))
             {
-                if (Plugin.RegrowDays.Value <= 0f) return null;
+                if (Plugin.RegrowDays.Value <= 0f || !Stumps.WillRegrow(target)) return null;
                 if (Trees.Excluded(Stumps.TreeOf(target))) return null;
                 if (Kept(target)) return "Stays\n(near a base)";
                 long first = target.GetLong(Stumps.SeenHash);

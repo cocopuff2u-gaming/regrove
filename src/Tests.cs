@@ -73,6 +73,29 @@ namespace Regrove
             string t0 = signs0.Count > 0 ? signs0[0].GetString(ZDOVars.s_text) : "", t1 = signs1.Count > 0 ? signs1[0].GetString(ZDOVars.s_text) : "";
             Check("sign on a regrowing sapling", signs0.Count == 1 && t0.StartsWith("Tree") && !signs0[0].Persistent, "\"" + t0.Replace("\n", " ") + "\"");
             Check("sign on a stump", signs1.Count == 1 && t1.StartsWith("Sapling in") && !signs1[0].Persistent, "\"" + t1.Replace("\n", " ") + "\"");
+            // only saplings: the stump's sign goes, the sapling's stays
+            Plugin.SignsOn.Value = Plugin.SignTargets.Saplings;
+            yield return new WaitForSeconds(4.5f);
+            Check("SignsOn = Saplings", Find(s0, 2.5f, sign).Count == 1 && Find(s1, 3f, sign).Count == 0, "");
+            // a stump that won't grow back gets no sign
+            Plugin.SignsOn.Value = Plugin.SignTargets.Stumps;
+            Plugin.RegrowChance.Value = 0;
+            yield return new WaitForSeconds(4.5f);
+            Check("RegrowChance 0: stump stays, no sign", !Stumps.WillRegrow(stump1) && Find(s1, 3f, sign).Count == 0 && Find(s0, 2.5f, sign).Count == 0, "");
+            Plugin.RegrowChance.Value = 100;
+            Plugin.SignsOn.Value = Plugin.SignTargets.Both;
+            // a chance of 50 lets about half the stumps through, the same ones every time
+            Plugin.RegrowChance.Value = 50;
+            int through = 0; bool same = true;
+            for (int i = 0; i < 1000; i++)
+            {
+                var z = new ZDO { m_uid = new ZDOID(77L + i % 7, (uint)(1000 + i)) };
+                bool a = Stumps.WillRegrow(z), b = Stumps.WillRegrow(z);
+                if (a) through++;
+                same &= a == b;
+            }
+            Check("RegrowChance 50 lets about half through, always the same ones", through > 420 && through < 580 && same, $"{through} of 1000");
+            Plugin.RegrowChance.Value = 100;
             Plugin.CountdownSigns.Value = false;
             Viewers.Clear();
             yield return new WaitForSeconds(4.5f);
